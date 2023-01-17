@@ -471,7 +471,6 @@ class TestImportValues:
         # assert cfn_client.list_imports(ExportName=export_name)["Imports"]
 
 
-@pytest.mark.skip(reason="Macros not yet supported")
 class TestMacros:
     @pytest.mark.aws_validated
     def test_global_scope(
@@ -495,6 +494,7 @@ class TestMacros:
         snapshot.add_transformer(snapshot.transform.regex(new_value, "new-value"))
         snapshot.match("processed_template", processed_template)
 
+    @pytest.mark.skip(reason="Snippet macros not yet supported")
     @pytest.mark.aws_validated
     @pytest.mark.parametrize(
         "template_to_transform",
@@ -552,6 +552,7 @@ class TestMacros:
         )
         snapshot.match("processed_template", processed_template)
 
+    @pytest.mark.skip(reason="Snippet macros not yet supported")
     @pytest.mark.aws_validated
     def test_scope_order_and_parameters(
         self,
