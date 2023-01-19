@@ -690,6 +690,7 @@ class TestMacros:
         create_lambda_function,
         lambda_client,
         snapshot,
+        cleanups,
     ):
         """
         The test validates the content of the event pass into the macro lambda
@@ -718,6 +719,7 @@ class TestMacros:
                 )
             ),
         )
+        cleanups.append(lambda: cfn_client.delete_stack(StackName=stack_name))
 
         cfn_client.get_waiter("stack_create_complete").wait(StackName=stack_name)
         processed_template = cfn_client.get_template(
