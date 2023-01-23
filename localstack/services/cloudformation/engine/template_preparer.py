@@ -5,6 +5,7 @@ from typing import Dict, List
 
 import boto3
 import yaml
+from flask import Response
 from moto.cloudformation.utils import yaml_tag_constructor
 from samtranslator.translator.transform import transform as transform_sam
 
@@ -116,14 +117,18 @@ def execute_macro(parsed_template: Dict, macro: Dict, stack_parameters: List) ->
 
     result = {}
     try:
-        result = json.loads(run_lambda(func_arn=function_arn, event=event).result)
+        invocation = run_lambda(func_arn=function_arn, event=event)
+        if isinstance(invocation.result, Response) and invocation.result.status_code == 500:
+            raise FailedTransformation(
+                transformation=macro["Name"],
+                message=f"Received malformed response from transform {transformation_id}. Rollback requested by user.",
+            )
+        result = json.loads(invocation.result)
     except TypeError:
         raise FailedTransformation(
             transformation=macro["Name"],
             message="Template format error: unsupported structure.. Rollback requested by user.",
         )
-    except Exception:
-        print("jeje")
 
     if result.get("status") != "success":
         error_message = result.get("errorMessage")
