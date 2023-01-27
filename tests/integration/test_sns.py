@@ -3191,3 +3191,25 @@ class TestSNSProvider:
         )
         # assert there are no messages in the queue
         assert "Messages" not in response
+
+    @pytest.mark.aws_validated
+    def test_publish_to_fifo_with_target_arn(self, sns_client, sns_create_topic):
+        topic_name = f"topic-{short_uid()}.fifo"
+        topic_attributes = {
+            "FifoTopic": "true",
+            "ContentBasedDeduplication": "true",
+        }
+
+        topic_arn = sns_create_topic(
+            Name=topic_name,
+            Attributes=topic_attributes,
+        )["TopicArn"]
+
+        message = {"foo": "bar"}
+        response = sns_client.publish(
+            TargetArn=topic_arn,
+            Message=json.dumps({"default": json.dumps(message)}),
+            MessageStructure="json",
+            MessageGroupId="123",
+        )
+        assert "MessageId" in response
